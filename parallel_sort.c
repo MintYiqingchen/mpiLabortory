@@ -97,7 +97,7 @@ void main(int argc, char* argv[]){
 	MPI_Gather(&localsize, 1, MPI_INT, recvbuffer, 1, MPI_INT, 0, MPI_COMM_WORLD); //0 gather size from processes
 
 	// mergesort
-	mul_mergesort(globalarray, rdispls);
+	mul_mergesort(globalarray, rdispls, psize, globalsize);
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	// gather sorted array
