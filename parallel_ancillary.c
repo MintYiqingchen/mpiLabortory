@@ -163,8 +163,8 @@ void mul_mergesort(int* array, int* displs, int segnum, int len) {
 	*/
 	int i;
 
-	//int** begins = malloc(sizeof(int*)*segnum), **ends = malloc(sizeof(int*)*segnum);
-	int* begins[50], *ends[50];
+	int** begins = malloc(sizeof(int*)*segnum), **ends = malloc(sizeof(int*)*segnum);
+	// int* begins[50], *ends[50];
 	for (i = 0; i < segnum; i++) {
 		begins[i] = array + displs[i];
 		if (i == segnum - 1)
@@ -178,15 +178,33 @@ void mul_mergesort(int* array, int* displs, int segnum, int len) {
 	_binaryCut(array, begins, ends, 0, segnum - 1);
 
 	// free 2-level pointer
-	// for (i = 0; i < segnum; ++i)
-	// {
-	// 	begins[i]=NULL;
-	// 	ends[i]=NULL;
-	// }
-	// begins = NULL; ends=NULL;
+	for (i = 0; i < segnum; ++i)
+	{
+		begins[i]=NULL;
+		ends[i]=NULL;
+	}
+	free(begins); free(ends);
+}
+void mul_mergesort1(int *array, int seglen, int segnum){
+	/*
+	@seglen: length of each segment
+	@segnum: how many segments are there
+	*/
+	int* displs = calloc(segnum, sizeof(int));
+	int i;
+	for(i = 0; i<segnum; ++i){
+		displs[i]=seglen*i;
+	}
+	mul_mergesort(array, displs, segnum, seglen*segnum);
+	free(displs);
 }
 int main(int argc, char* argv[]) {
 	int sz = argc - 1, i;
+	if (sz==0)
+	{
+		printf("%d\n", sz);
+		return 0;
+	}
 	int* res = local_str2int(argv, 1, sz);
 
 	// int idx = partition(res, sz);
@@ -194,9 +212,9 @@ int main(int argc, char* argv[]) {
 	// quicksort(res, idx+1, sz);
 	// for(i=0;i<sz;i++)
 	// 	printf("%d\n", res[i]); 
-	int displs[5] = { 0, 2, 4 ,6, 6 };
-	mul_mergesort(res, displs, 5, sz);
-
+	// int displs[5] = { 0, 2, 4 ,6, 6 };
+	// mul_mergesort(res, displs, 5, sz);
+	mul_mergesort1(res, 3, 4);
 	for (i = 0; i<sz; i++)
 		printf("%d\n", res[i]);
 

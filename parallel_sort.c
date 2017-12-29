@@ -10,7 +10,9 @@ void main(int argc, char* argv[]){
 	int prank=0;
 	MPI_Comm_size(MPI_COMM_WORLD, &psize);
 	MPI_Comm_rand(MPI_COMM_WORLD, &prank);
-	
+	// generate numbers
+	int* localarray;
+		
 	// every process get local numbers from argv, [lo, lo+localsize)
 	int i, globalsize = argc-1;
 	int localsize = globalsize/psize, lo = localsize*prank;
@@ -20,7 +22,8 @@ void main(int argc, char* argv[]){
 	printf("process %d: localsize %d lo %d\n", prank, localsize, lo);
 
 	// convert string into integer
-	int* localarray = local_str2int(argv, lo, localsize);
+	localarray = local_str2int(argv, lo, localsize);
+
 	// local quicksort
 	int pivotidx = partition(localarray, localsize);
 	quicksort(localarray, lo, pivotidx);
@@ -56,7 +59,7 @@ void main(int argc, char* argv[]){
 		}
 
 		// local merge sort
-		mul_mergesort(recvbuffer, psize-1, psize);
+		mul_mergesort1(recvbuffer, psize-1, psize);
 
 		// choose p-1, send to every process
 		for(i = 1; i <= psize-1; i++){
