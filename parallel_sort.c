@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include <limits.h>
 #include "mpi.h"
 
 void main(int argc, char* argv[]){

@@ -3,6 +3,7 @@
 #include <math.h>
 #include <string.h>
 #include <limits.h>
+#include <time.h>
 
 int* local_str2int(char* argv[], int lo, int localsize) {
 	int* array = (int*)malloc(localsize * sizeof(int));
@@ -27,10 +28,10 @@ int partition(int* array, int len) {
 	}
 	array[0] = array[lo];
 	array[lo] = pivot;
-	// int i;
-	// for(i=0;i<len;i++)
+	//int i;
+	//for(i=0;i<len;i++)
 	// 	printf("array %d\n", array[i]); 
-	// printf("lo%d\n", lo);
+	//printf("lo %d\n", lo);
 	return lo;
 }
 void quicksort(int *array, int lo, int hi) {
@@ -200,6 +201,7 @@ void mul_mergesort1(int *array, int seglen, int segnum){
 }
 int main(int argc, char* argv[]) {
 	int sz = argc - 1, i;
+	time_t start, end;
 	if (sz==0)
 	{
 		printf("%d\n", sz);
@@ -207,18 +209,27 @@ int main(int argc, char* argv[]) {
 	}
 	int* res = local_str2int(argv, 1, sz);
 
-	// int idx = partition(res, sz);
-	// quicksort(res, 0, idx);
-	// quicksort(res, idx+1, sz);
-	// for(i=0;i<sz;i++)
-	// 	printf("%d\n", res[i]); 
-	// int displs[5] = { 0, 2, 4 ,6, 6 };
-	// mul_mergesort(res, displs, 5, sz);
-	mul_mergesort1(res, 3, 4);
-	for (i = 0; i<sz; i++)
+	for(i=0;i<sz;i++)
 		printf("%d\n", res[i]);
 
+	start = time(NULL); 
+	int idx = partition(res, sz);
+	quicksort(res, 0, idx);
+	quicksort(res, idx+1, sz);
+	end = time(NULL);
+	// int displs[5] = { 0, 2, 4 ,6, 6 };
+	// mul_mergesort(res, displs, 5, sz);
+	// mul_mergesort1(res, 3, 4);
+	printf("------------------ after sort ----------------\n");
+	for (i = 0; i < sz; i++)
+		printf("%d\n", res[i]);
+	printf("The difference is: %f seconds\n",difftime(start,end));
+	for (i = 0; i<sz-1; i++){
+		if(res[i]>res[i+1]){
+			printf("didnt pass test on res[%d]:%d res[%d]:%d\n", i,i+1,res[i],res[i+1]);
+		}
+	}
+	printf("test end\n");
 	free(res);
-	printf("ok\n");
 	return 0;
 }
