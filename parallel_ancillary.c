@@ -219,9 +219,11 @@ int main(int argc, char* argv[]) {
 
     int* res = (int*)calloc(num, sizeof(int));
 
+    printf("generate random number at time:%f\n", clock()*1.0/CLOCKS_PER_SEC);
 	for(i=0;i<num;i++){
         res[i]=rand();
     }
+    printf("finish generate at %f\n", clock()*1.0/CLOCKS_PER_SEC);
 	start = clock();
 	int idx = partition(res, num);
 	quicksort(res, 0, idx);
@@ -235,7 +237,7 @@ int main(int argc, char* argv[]) {
 /*	for (i = 0; i < sz; i++)
 		printf("%d\n", res[i]);
     */
-	printf("The difference is: %f seconds\n",(end-start)/CLOCKS_PER_SEC);
+	printf("The difference is: %f seconds\n",(end-start)*1.0/CLOCKS_PER_SEC);
 	for (i = 0; i<num-1; i++){
 		if(res[i]>res[i+1]){
 			printf("didnt pass test on res[%d]:%d res[%d]:%d\n", i,i+1,res[i],res[i+1]);

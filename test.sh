@@ -11,8 +11,8 @@ declare -a ary
 
 
 #gcc $(pwd)/parallel_ancillary.c
-./a.out 10000000 randomnum.txt
+#./a.out 200000000 randomnum.txt
 
 #mpicc -g parallel_final.c -o final.out
-#echo "start mpi program"
-#mpirun -np 4 final.out 1000000 randomnum.txtvimii
+echo "start mpi program"
+mpirun -np 8 final.out 200000000 randomnum.txt

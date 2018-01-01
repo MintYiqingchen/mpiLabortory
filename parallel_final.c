@@ -168,7 +168,7 @@ void main(int argc, char* argv[]){
 	MPI_Comm_rank(MPI_COMM_WORLD, &prank);
 	// generate numbers
 	int* localarray;
-	time_t start, end;
+	clock_t start, end;
 
 	// every process get local numbers from argv, [lo, lo+localsize)
 	int i, globalsize = atoi(argv[1]);
@@ -194,7 +194,7 @@ void main(int argc, char* argv[]){
 	}
 	printf("process %d: localsize %d lo %d\n", prank, localsize, lo);
 //	MPI_Bcast((void*)globalarray, globalsize, MPI_INT, 0, MPI_COMM_WORLD);
-	
+
 	// convert string into integer or get local array from p 0
 	// localarray = local_str2int(argv, lo+1, localsize);
 	localarray = (int*)malloc(localsize * sizeof(int));
@@ -203,7 +203,7 @@ void main(int argc, char* argv[]){
 		localarray[i]=rand();
 //	localarray = memcpy(localarray, globalarray+lo, sizeof(int)*localsize);
 	// get current time
-	start = time(NULL);
+	start = clock();
 
 	// local quicksort
 	int pivotidx = partition(localarray, localsize);
@@ -288,7 +288,7 @@ void main(int argc, char* argv[]){
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Alltoallv((void*)localarray, section_length, sdispls, MPI_INT,
 		(void*)globalarray, recvbuffer, rdispls, MPI_INT, MPI_COMM_WORLD);
-	
+
 //	for (i = 0; i < localsize; i++)
 //		printf("process %d partition before merge: %d\n",prank, globalarray[i]);
 
@@ -313,8 +313,8 @@ void main(int argc, char* argv[]){
 
 	// output
 	if(prank==0){
-		end = time(NULL);
-		printf("The difference is: %f seconds\n",difftime(end,start));
+		end = clock();
+		printf("The difference is: %f seconds\n",(end-start)*1.0/CLOCKS_PER_SEC);
 /*		FILE* f = fopen("/home/mintyi/codework/mpiLabortory/output.txt", "w");
 		for(i = 0; i < globalsize; i++){
 			fprintf(f, "%d, ", globalarray[i]);
