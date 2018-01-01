@@ -9,9 +9,10 @@ declare -a ary
 #./randomG.out 10000000
 #done
 
-#gcc $(pwd)/parallel_ancillary.c
-./a.out 100000000 randomnum.txt
 
-# mpicc -g parallel_final.c -o final.out
-echo "start mpi program"
-mpirun -np 4 final.out 100000000 randomnum.txt
+#gcc $(pwd)/parallel_ancillary.c
+./a.out 10000000 randomnum.txt
+
+#mpicc -g parallel_final.c -o final.out
+#echo "start mpi program"
+#mpirun -np 4 final.out 1000000 randomnum.txtvimii

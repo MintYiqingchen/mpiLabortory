@@ -208,20 +208,27 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
     long long num = atoll(argv[1]);
-    FILE* fp = fopen(argv[2],"r");
+    /*FILE* fp = fopen(argv[2],"r");
 //	int* res = local_str2int(argv, 1, sz);
     int* res = (int*)calloc(num, sizeof(int));
 	for(i=0;i<num;i++){
         fscanf(fp,"%d", &res[i]);
     }
     fclose(fp);
+*/
 
+    int* res = (int*)calloc(num, sizeof(int));
+
+	for(i=0;i<num;i++){
+        res[i]=rand();
+    }
 	start = clock();
-	int idx = partition(res, sz);
+	int idx = partition(res, num);
 	quicksort(res, 0, idx);
-	quicksort(res, idx+1, sz);
+	quicksort(res, idx+1, num);
 	end = clock();
-	// int displs[5] = { 0, 2, 4 ,6, 6 };
+
+    // int displs[5] = { 0, 2, 4 ,6, 6 };
 	// mul_mergesort(res, displs, 5, sz);
 	// mul_mergesort1(res, 3, 4);
 	printf("------------------ after sort ----------------\n");
@@ -229,7 +236,7 @@ int main(int argc, char* argv[]) {
 		printf("%d\n", res[i]);
     */
 	printf("The difference is: %f seconds\n",(end-start)/CLOCKS_PER_SEC);
-	for (i = 0; i<sz-1; i++){
+	for (i = 0; i<num-1; i++){
 		if(res[i]>res[i+1]){
 			printf("didnt pass test on res[%d]:%d res[%d]:%d\n", i,i+1,res[i],res[i+1]);
 		}

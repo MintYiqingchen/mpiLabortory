@@ -178,7 +178,7 @@ void main(int argc, char* argv[]){
 	int *sdispls=(int*)calloc(psize, sizeof(int)), *rdispls=(int*)calloc(psize, sizeof(int));
 
 	//read number from file
-	if(prank==0){
+/*	if(prank==0){
 		FILE* fh;
 		fh=fopen(argv[2], "r");
 		for(i=0; i<globalsize; i++){
@@ -186,19 +186,22 @@ void main(int argc, char* argv[]){
 		}
 		fclose(fh);
 	}
-
+*/
 	int localsize = globalsize/psize, lo = localsize*prank, remain = globalsize-localsize*psize;
 	if(prank >= psize - remain){
 		localsize++; // final process has one more number
         	lo += remain -psize +prank;
 	}
 	printf("process %d: localsize %d lo %d\n", prank, localsize, lo);
-	MPI_Bcast((void*)globalarray, globalsize, MPI_INT, 0, MPI_COMM_WORLD);
+//	MPI_Bcast((void*)globalarray, globalsize, MPI_INT, 0, MPI_COMM_WORLD);
 	
 	// convert string into integer or get local array from p 0
 	// localarray = local_str2int(argv, lo+1, localsize);
 	localarray = (int*)malloc(localsize * sizeof(int));
-	localarray = memcpy(localarray, globalarray+lo, sizeof(int)*localsize);
+	srand(time(NULL));
+	for(i=0;i<localsize;i++)
+		localarray[i]=rand();
+//	localarray = memcpy(localarray, globalarray+lo, sizeof(int)*localsize);
 	// get current time
 	start = time(NULL);
 
@@ -234,7 +237,7 @@ void main(int argc, char* argv[]){
 		// wait all non-blocking
 		for(i = 1; i < psize; i++){
 			MPI_Wait(&requests[i-1], recvinfo);
-//			printf("sampled elements from process %d received.\n", i);
+			printf("sampled elements from process %d received.\n", i);
 		}
 
 		// local merge sort
@@ -311,7 +314,7 @@ void main(int argc, char* argv[]){
 	// output
 	if(prank==0){
 		end = time(NULL);
-		printf("The difference is: %f seconds\n",difftime(start,end));
+		printf("The difference is: %f seconds\n",difftime(end,start));
 /*		FILE* f = fopen("/home/mintyi/codework/mpiLabortory/output.txt", "w");
 		for(i = 0; i < globalsize; i++){
 			fprintf(f, "%d, ", globalarray[i]);
