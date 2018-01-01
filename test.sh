@@ -1,14 +1,17 @@
 #!/bin/bash
 declare -a ary
 
-echo "start generate random numbers"
-for ((i=1; i<=100000; i++))
-do
-    ary[i]=$RANDOM
-done
+#rm randomnum.txt
 
-echo "${ary[*]}"|xargs -r ./a.out
+#gcc randomGenerator.c -o randomG.out
+#for((i=0; i<10; i++))
+#do
+#./randomG.out 10000000
+#done
 
-mpicc -g parallel_final.c -o final.out
+#gcc $(pwd)/parallel_ancillary.c
+./a.out 100000000 randomnum.txt
+
+# mpicc -g parallel_final.c -o final.out
 echo "start mpi program"
-echo "${ary[*]}"|xargs -r mpirun ./final.out
+mpirun -np 4 final.out 100000000 randomnum.txt

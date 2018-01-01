@@ -30,7 +30,7 @@ int partition(int* array, int len) {
 	array[lo] = pivot;
 	// int i;
 	// for(i=0;i<len;i++)
-	// 	printf("array %d\n", array[i]); 
+	// 	printf("array %d\n", array[i]);
 	// printf("lo%d\n", lo);
 	return lo;
 }
@@ -153,32 +153,55 @@ void mul_mergesort1(int *array, int seglen, int segnum){
 void main(int argc, char* argv[]){
 	MPI_Init(&argc, &argv);
 	#ifdef MPI_DEBUG
-	int bug_break = 1;
+    	int bug_break = 1;
 	while(bug_break){
 	}
 	#endif
+    	if (argc<3){
+        	MPI_Finalize();
+        	return;
+    	}
+
 	int psize=0;
 	int prank=0;
 	MPI_Comm_size(MPI_COMM_WORLD, &psize);
 	MPI_Comm_rank(MPI_COMM_WORLD, &prank);
-	// generate numbers	
+	// generate numbers
 	int* localarray;
 	time_t start, end;
 
 	// every process get local numbers from argv, [lo, lo+localsize)
-	int i, globalsize = argc-1;
+	int i, globalsize = atoi(argv[1]);
+	int* globalarray = (int*)calloc(globalsize, sizeof(int));
+	int* recvbuffer = (int*)calloc(psize, sizeof(int));
+	int* sendbuffer = (int*)calloc(psize, sizeof(int));
+	int *sdispls=(int*)calloc(psize, sizeof(int)), *rdispls=(int*)calloc(psize, sizeof(int));
+
+	//read number from file
+	if(prank==0){
+		FILE* fh;
+		fh=fopen(argv[2], "r");
+		for(i=0; i<globalsize; i++){
+			fscanf(fh,"%d", &globalarray[i]);
+		}
+		fclose(fh);
+	}
+
 	int localsize = globalsize/psize, lo = localsize*prank, remain = globalsize-localsize*psize;
 	if(prank >= psize - remain){
 		localsize++; // final process has one more number
+        	lo += remain -psize +prank;
 	}
 	printf("process %d: localsize %d lo %d\n", prank, localsize, lo);
+	MPI_Bcast((void*)globalarray, globalsize, MPI_INT, 0, MPI_COMM_WORLD);
 	
-	// convert string into integer
-	localarray = local_str2int(argv, lo+1, localsize);
-
+	// convert string into integer or get local array from p 0
+	// localarray = local_str2int(argv, lo+1, localsize);
+	localarray = (int*)malloc(localsize * sizeof(int));
+	localarray = memcpy(localarray, globalarray+lo, sizeof(int)*localsize);
 	// get current time
-	start = time(NULL); 
-		
+	start = time(NULL);
+
 	// local quicksort
 	int pivotidx = partition(localarray, localsize);
 	quicksort(localarray, 0, pivotidx);
@@ -189,13 +212,11 @@ void main(int argc, char* argv[]){
 
 	// sample p-1 numbers
 	int w = (int)(globalsize*1.0/psize/psize);
-	int* sendbuffer = (int*)calloc(psize, sizeof(int));
 	for(i = 1; i <= psize-1; i++){
 		sendbuffer[i-1] = localarray[i * w];
 	}
 
 	// send to p0, receive p-1 sampled elements
-	int* recvbuffer = (int*)calloc(psize, sizeof(int));
 	MPI_Status* recvinfo = (MPI_Status*)malloc(sizeof(MPI_Status));
 	if(prank != 0){
 		MPI_Send((void*)sendbuffer, psize-1, MPI_INT, 0, prank, MPI_COMM_WORLD);
@@ -223,13 +244,13 @@ void main(int argc, char* argv[]){
 
 		// choose p-1, send to every process
 		for(i = 1; i <= psize-1; i++){
-			sendbuffer[i-1] = localarray[i * (psize-1)];
-//			printf("choosed sample: %d\n", sendbuffer[i-1]);
+			sendbuffer[i-1] = recvbuffer[i * (psize-1)];
+			printf("choosed sample: %d\n", sendbuffer[i-1]);
 		}
 	}
 	MPI_Bcast((void*)sendbuffer, psize-1, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD);
-	
+
 	// partition local sorted array
 	int *section_length = (int*)calloc(psize, sizeof(int));
 	int count=0, j;
@@ -249,40 +270,41 @@ void main(int argc, char* argv[]){
 
 
 	// send i-th section to i-th process
-	int* globalarray = (int*)calloc(globalsize, sizeof(int));
 	MPI_Alltoall((void*)section_length, 1, MPI_INT, (void*)recvbuffer, 1, MPI_INT, MPI_COMM_WORLD);
 //	for (i = 0; i < psize; i++)
 //		printf("process %d recv num: %d\n",prank, recvbuffer[i]);
 
-	int *sdispls=(int*)calloc(psize, sizeof(int)), *rdispls=(int*)calloc(psize, sizeof(int)); 
 	localsize = 0;
-
+	sdispls[0] = 0; rdispls[0] = 0;
 	for(i = 1; i < psize; i++){
 		sdispls[i] = sdispls[i-1]+section_length[i-1];
 		rdispls[i] = rdispls[i-1]+recvbuffer[i-1];
+//		printf("process %d send start: %d send length:%d\n",prank, sdispls[i], section_length[i]);
 	}
 	localsize = recvbuffer[psize-1] + rdispls[psize-1];
-
+	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Alltoallv((void*)localarray, section_length, sdispls, MPI_INT,
 		(void*)globalarray, recvbuffer, rdispls, MPI_INT, MPI_COMM_WORLD);
-	MPI_Allgather(&localsize, 1, MPI_INT, recvbuffer, 1, MPI_INT, MPI_COMM_WORLD); //gather local size from ALL processes
-
+	
 //	for (i = 0; i < localsize; i++)
 //		printf("process %d partition before merge: %d\n",prank, globalarray[i]);
+
+	MPI_Allgather(&localsize, 1, MPI_INT, recvbuffer, 1, MPI_INT, MPI_COMM_WORLD); //gather local size from ALL processes
+
 
 	// mergesort
 	mul_mergesort(globalarray, rdispls, psize, localsize);
 	MPI_Barrier(MPI_COMM_WORLD);
 //	for (i = 0; i < localsize; i++)
 //		printf("process %d partition after merge: %d\n",prank, globalarray[i]);
-	
+
 
 	// gather sorted array
 	rdispls[0] = 0;
 	for(i = 1; i < psize; i++)
 		rdispls[i]=rdispls[i-1]+recvbuffer[i-1];
-	
-	MPI_Allgatherv((void*)globalarray, localsize, MPI_INT, 
+
+	MPI_Allgatherv((void*)globalarray, localsize, MPI_INT,
 		(void*)globalarray, recvbuffer, rdispls, MPI_INT, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD);
 
@@ -290,12 +312,12 @@ void main(int argc, char* argv[]){
 	if(prank==0){
 		end = time(NULL);
 		printf("The difference is: %f seconds\n",difftime(start,end));
-		FILE* f = fopen("/home/mintyi/codework/mpiLabortory/output.txt", "w");
+/*		FILE* f = fopen("/home/mintyi/codework/mpiLabortory/output.txt", "w");
 		for(i = 0; i < globalsize; i++){
 			fprintf(f, "%d, ", globalarray[i]);
 		}
 		fprintf(f, "\n");
-		fclose(f);
+		fclose(f);*/
 		for (i = 0; i<globalsize-1; i++){
 			if(globalarray[i]>globalarray[i+1]){
 				printf("didnt pass test on res[%d]:%d res[%d]:%d\n", i,globalarray[i],i+1,globalarray[i+1]);
@@ -303,10 +325,10 @@ void main(int argc, char* argv[]){
 		}
 		printf("test end\n");
 	}
-	
+
 	// free memory
 	free(localarray);
- 	free(sendbuffer); 
+ 	free(sendbuffer);
 	free(recvbuffer);
 	free(section_length);
 	free(sdispls); free(rdispls);

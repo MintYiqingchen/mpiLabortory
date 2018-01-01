@@ -30,7 +30,7 @@ int partition(int* array, int len) {
 	array[lo] = pivot;
 	//int i;
 	//for(i=0;i<len;i++)
-	// 	printf("array %d\n", array[i]); 
+	// 	printf("array %d\n", array[i]);
 	//printf("lo %d\n", lo);
 	return lo;
 }
@@ -54,7 +54,7 @@ void mul_mergesort_slow(int* array, int* displs, int segnum, int len) {
 	int* ary2 = (int*)malloc(sizeof(int) * segnum);
 	memcpy(ary2, array, len * sizeof(int));
 	// for(i=0;i<len;i++)
-	// 	printf("%d\n", ary2[i]); 
+	// 	printf("%d\n", ary2[i]);
 
 	int** begins = (int**)malloc(sizeof(int*)*segnum), **ends = (int**)malloc(sizeof(int*)*segnum);
 	for (i = 0; i < segnum; i++) {
@@ -201,29 +201,34 @@ void mul_mergesort1(int *array, int seglen, int segnum){
 }
 int main(int argc, char* argv[]) {
 	int sz = argc - 1, i;
-	time_t start, end;
-	if (sz==0)
+	clock_t start, end;
+	if (sz<2)
 	{
 		printf("%d\n", sz);
 		return 0;
 	}
-	int* res = local_str2int(argv, 1, sz);
+    long long num = atoll(argv[1]);
+    FILE* fp = fopen(argv[2],"r");
+//	int* res = local_str2int(argv, 1, sz);
+    int* res = (int*)calloc(num, sizeof(int));
+	for(i=0;i<num;i++){
+        fscanf(fp,"%d", &res[i]);
+    }
+    fclose(fp);
 
-	for(i=0;i<sz;i++)
-		printf("%d\n", res[i]);
-
-	start = time(NULL); 
+	start = clock();
 	int idx = partition(res, sz);
 	quicksort(res, 0, idx);
 	quicksort(res, idx+1, sz);
-	end = time(NULL);
+	end = clock();
 	// int displs[5] = { 0, 2, 4 ,6, 6 };
 	// mul_mergesort(res, displs, 5, sz);
 	// mul_mergesort1(res, 3, 4);
 	printf("------------------ after sort ----------------\n");
-	for (i = 0; i < sz; i++)
+/*	for (i = 0; i < sz; i++)
 		printf("%d\n", res[i]);
-	printf("The difference is: %f seconds\n",difftime(start,end));
+    */
+	printf("The difference is: %f seconds\n",(end-start)/CLOCKS_PER_SEC);
 	for (i = 0; i<sz-1; i++){
 		if(res[i]>res[i+1]){
 			printf("didnt pass test on res[%d]:%d res[%d]:%d\n", i,i+1,res[i],res[i+1]);
