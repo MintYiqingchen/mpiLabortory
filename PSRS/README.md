@@ -24,7 +24,9 @@ mpirun -np 8 final.out 200000000 randomnum.txt
 测试结果都是前面是快速排序，后面是正则采样排序
 
 1. 100000个数字
-![1000000排序][../images/100000_sort.png “sort time”]
+
+![1000000排序](../images/100000_sort.png "sort time")
 
 2. 200000000个数字
-![200000000排序][../images/200000000_sort.png "sort time"]
+
+![200000000排序](../images/200000000_sort.png "sort time")
