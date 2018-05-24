@@ -157,10 +157,10 @@ void main(int argc, char* argv[]){
 	while(bug_break){
 	}
 	#endif
-    	if (argc<3){
-        	MPI_Finalize();
-        	return;
-    	}
+	if (argc<3){
+		MPI_Finalize();
+		return;
+	}
 
 	int psize=0;
 	int prank=0;
@@ -178,7 +178,8 @@ void main(int argc, char* argv[]){
 	int *sdispls=(int*)calloc(psize, sizeof(int)), *rdispls=(int*)calloc(psize, sizeof(int));
 
 	//read number from file
-/*	if(prank==0){
+	/*
+	if(prank==0){
 		FILE* fh;
 		fh=fopen(argv[2], "r");
 		for(i=0; i<globalsize; i++){
@@ -186,14 +187,14 @@ void main(int argc, char* argv[]){
 		}
 		fclose(fh);
 	}
-*/
+	*/
 	int localsize = globalsize/psize, lo = localsize*prank, remain = globalsize-localsize*psize;
 	if(prank >= psize - remain){
 		localsize++; // final process has one more number
         	lo += remain -psize +prank;
 	}
 	printf("process %d: localsize %d lo %d\n", prank, localsize, lo);
-//	MPI_Bcast((void*)globalarray, globalsize, MPI_INT, 0, MPI_COMM_WORLD);
+	// MPI_Bcast((void*)globalarray, globalsize, MPI_INT, 0, MPI_COMM_WORLD);
 
 	// convert string into integer or get local array from p 0
 	// localarray = local_str2int(argv, lo+1, localsize);
@@ -201,7 +202,7 @@ void main(int argc, char* argv[]){
 	srand(time(NULL));
 	for(i=0;i<localsize;i++)
 		localarray[i]=rand();
-//	localarray = memcpy(localarray, globalarray+lo, sizeof(int)*localsize);
+	// localarray = memcpy(localarray, globalarray+lo, sizeof(int)*localsize);
 	// get current time
 	start = clock();
 
